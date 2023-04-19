@@ -1,7 +1,5 @@
 
 // API
-const OPENAI_API_KEY = "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"
-const SERPER_API_KEY = "a93073a515f7cd44bdc8dae18e6d99a341723100"
 const SERPER_API_URL = "https://google.serper.dev/search"
 const OPENAI_CHAT_URL = "https://api.openai.com/v1/chat/completions"
 const OPENAI_COMPLETION_URL = "https://api.openai.com/v1/completions"
@@ -114,7 +112,7 @@ function getChunkedResponse(payload, last_thread, callback) {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + OPENAI_API_KEY
+            'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY
         },
         body: JSON.stringify(payload.body)
     }).then(async (response) => {
@@ -239,7 +237,7 @@ function searchInternet(user_message, thread_id, settings, chat_history, callbac
         // save internet content in user message
         let search_query = user_message + " based on\n" + JSON.stringify(data)
 
-        // get CHATGPT answer based only on last user message + internet content
+        // get CHATGPT answer based only on user message + internet content
         getCHATGPTMessage(search_query, thread_id + 1, settings, chat_history, (data, done, error) => {
             callback(data, done, error)
 
@@ -265,8 +263,9 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
 
 
 
-    // setup chat_history once
+    
     if (thread_id === 1) {
+        // setup once in first thread which has no internet content
         let settings = getSettings()
 
         // set username + botname from settings everytime before user+assistant message
@@ -274,20 +273,28 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
             { role: "user", content: "My name is " + settings.username + "." },
             { role: "assistant", content: "Hello " + settings.username + ". My name is " + settings.botname + ". How can i assist you today?" }
         )
-    }
 
 
-    for (let a = 0; a < chat_history.length; a++) {
-        // merge internet content with bot chat
-        if ((thread_id === 1 && settings.internetContentUse && chat_history[a].internet_content !== undefined) || thread_id !== 1) {
-            content = chat_history[a].internet_content
-        } else {
-            content = chat_history[a].content
+        // setup chat_history once, other threads answer based on internet content
+        for (let a = 0; a < chat_history.length; a++) {
+            // merge internet content with bot chat
+            if ((thread_id === 1 && settings.internetContentUse && chat_history[a].internet_content !== undefined) || thread_id !== 1) {
+                content = chat_history[a].internet_content
+            } else {
+                content = chat_history[a].content
+            }
+    
+            engine1_messages.push({ role: chat_history[a].role, content: content })
+            engine2_messages += content + "\r"
         }
-
-        engine1_messages.push({ role: chat_history[a].role, content: content })
-        engine2_messages += content + "\r"
+    }else{
+        // other threads doesn't need chat history, answer only based on internet content
+        engine1_messages.push({ role:"user", content: user_message })
+        engine2_messages += user_message + "\r"
     }
+
+    
+
 
 
 
@@ -435,7 +442,7 @@ export function getSearchEngineResult(query, thread_id, callback) {
     fetch(SERPER_API_URL, {
         method: "POST",
         headers: {
-            "X-API-KEY": SERPER_API_KEY,
+            "X-API-KEY": process.env.SERPER_API_KEY,
             "Content-Type": "application/json"
         },
         body: JSON.stringify(payload),
