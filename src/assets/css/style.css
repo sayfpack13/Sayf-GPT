@@ -1,0 +1,287 @@
+body,
+#root,
+main {
+    margin: 0px;
+    padding: 0px !important;
+}
+
+
+
+
+.navbar {
+    background-color: #202123 !important;
+}
+
+body {
+    background-color: #343541 !important;
+}
+
+.drawer .MuiDrawer-paper {
+    background-color: #202123 !important;
+}
+
+
+.loader.loading {
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url("/image/loader.gif");
+    background-position: 50% 50%;
+}
+.loader.loaded {
+    background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url("/image/loaded.gif");
+    background-position: 50% 50%;
+}
+
+.loader {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.loader.title {
+    top: 65%;
+    color: #fff;
+    font-size: 50px;
+    text-align: center;
+}
+
+
+.icon-btn {
+    background-color: #1976d2 !important;
+    transition: 0.2s;
+}
+
+
+.icon-btn.simple,
+.icon-btn.simple:hover {
+    background-color: transparent !important;
+}
+
+.icon-btn.centered {
+    display: flex !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.icon-btn:hover {
+    background-color: #1565c0 !important;
+    transition: 0.2s;
+}
+
+.icon-btn .MuiTouchRipple-child {
+    background-color: #fff !important;
+}
+
+.icon-btn svg {
+    width: auto;
+    height: 35px;
+    color: #fff;
+}
+
+.icon-btn.small svg {
+    height: 30px;
+}
+
+
+.chat-header {
+    padding: 10px;
+    background-color: #202123 !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn.small {
+    width: 100px;
+    height: 50px;
+}
+
+.btn {
+    width: 100px;
+    height: 50px;
+    font-size: 15px !important;
+}
+
+.btn.big {
+    width: 100px;
+    height: 50px;
+    font-size: 20px !important;
+}
+
+.btn.left {
+    margin-right: 10px;
+}
+
+.btn.right {
+    margin-left: 10px;
+}
+
+
+.chat-header .chat-message {
+    color: #fff;
+    font-weight: bold;
+    font-size: 20px;
+    background-color: #40414F;
+    width: 70%;
+    max-height: 80px;
+    resize: none;
+    overflow-y: visible !important;
+}
+
+.chat-body .message.bot {
+    background-color: #ffffff1c;
+}
+
+/*
+.chat-body .message:hover {
+    background-color: #4b4b5496;
+}
+*/
+
+
+.chat-header .chat-message:focus {
+    outline: 3px solid #1976d2;
+
+}
+
+.chat-header .chat-message:disabled {
+    background-color: #1b1c1e;
+}
+
+.chat-header .chat-message input {
+    color: #fff;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+
+
+
+.chat-body {
+    padding-left: 5% !important;
+    padding-right: 5% !important;
+    padding-top: 3% !important;
+    padding-bottom: 3% !important;
+    margin-bottom: 80px !important;
+}
+
+
+.chat-body .message .content p {
+    white-space: pre-line;
+}
+
+
+
+
+
+
+.chat-body .message .MuiTouchRipple-child {
+    background-color: #8b8c96;
+}
+
+.chat-body .message .MuiListItemText-secondary {
+    color: #fff !important;
+}
+
+
+.chat-body .message .head {
+    display: flex;
+    align-items: center;
+}
+
+.chat-body .message .username {
+    color: #fff;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.chat-body .message .date {
+    color: #fff;
+    margin-left: 10px;
+    font-size: 15px;
+}
+
+
+.chat-body .message .MuiListItemText-secondary {
+    word-break: break-all;
+}
+
+
+.chat-body .message .avatar {
+    background-color: #202123;
+}
+
+
+
+.space.small {
+    margin: 5px !important;
+}
+.space {
+    margin: 10px !important;
+}
+.space.big {
+    margin: 20px !important;
+}
+
+
+.space.line {
+    margin: 30px !important;
+    border: 1px solid #fff;
+    width: 100%;
+}
+
+.drawer .settings {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.drawer .settings .item {
+    background-color: #ffffff38;
+    padding: 5px;
+    border-radius: 10px;
+    outline: 0px solid #1565c0;
+}
+
+.drawer .settings .item:hover {
+    outline: 2px solid #1976d2;
+}
+
+.drawer .settings .item.centered,
+.drawer .settings .item.centered input {
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+
+.drawer-list .MuiMenu-paper {
+    background-color: #343541;
+    color: #fff;
+}
+
+.drawer-list .MuiMenu-paper .MuiMenuItem-root.Mui-selected {
+    background-color: #1976d2;
+}
+
+.drawer-list .MuiMenu-paper .MuiMenuItem-root:hover {
+    background-color: #1565c0;
+}
+
+.drawer .settings .item label,
+.drawer .settings .item input,
+.drawer .settings .item .select,
+.drawer .settings .item .MuiSlider-markLabel {
+    color: #fff;
+    font-size: 17px;
+}
+
+.drawer .settings .item .MuiInputBase-formControl {
+    outline: none;
+    margin: -4px;
+    border-radius: 10px;
+}
