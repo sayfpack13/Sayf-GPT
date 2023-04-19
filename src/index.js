@@ -4,6 +4,7 @@ import * as React from 'react';
 import Index from './components/Index';
 import { useState } from 'react';
 import "./assets/css/fake-captcha.css"
+require('dotenv').config()
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

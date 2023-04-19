@@ -263,7 +263,7 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
 
 
 
-    
+
     if (thread_id === 1) {
         // setup once in first thread which has no internet content
         let settings = getSettings()
@@ -283,17 +283,17 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
             } else {
                 content = chat_history[a].content
             }
-    
+
             engine1_messages.push({ role: chat_history[a].role, content: content })
             engine2_messages += content + "\r"
         }
-    }else{
+    } else {
         // other threads doesn't need chat history, answer only based on internet content
-        engine1_messages.push({ role:"user", content: user_message })
+        engine1_messages.push({ role: "user", content: user_message })
         engine2_messages += user_message + "\r"
     }
 
-    
+
 
 
 
@@ -447,11 +447,17 @@ export function getSearchEngineResult(query, thread_id, callback) {
         },
         body: JSON.stringify(payload),
         redirect: 'follow'
-    }).then((response) => response.json()).then((data) => {
-        callback(data, false)
-    }).catch((error) => {
-        callback(error.message, true)
+    }).then(async (response) => {
+        if (!response.ok) {
+            let response_json = await response.json()
+            return callback(response_json.error.message, true)
+        }
     })
+        .then((data) => {
+            callback(data, false)
+        }).catch((error) => {
+            callback(error.message, true)
+        })
 }
 
 
