@@ -38,13 +38,15 @@ export default class Index extends React.Component {
         this.state = {
             openMenu: false,
             Component_Loaded: false,
+            setLoaded: false,
             path: "/",
 
-            setLoaded: false,
 
 
 
             settings: {
+                openai_api_key: "",
+                serper_api_key: "",
                 username: "",
                 botname: "",
                 botTemperature: 0,
@@ -79,7 +81,7 @@ export default class Index extends React.Component {
 
 
         // play loading sound
-        playRandomSound(loadingSounds,true,true)
+        playRandomSound(loadingSounds, true, true)
 
         // temporary remove after done
         //this.setState({ Component_Loaded: true })
@@ -100,31 +102,42 @@ export default class Index extends React.Component {
                     pathname = "/"
                 }
 
-                setTimeout(() => {
-                    // set loader loaded to true and save settings
-                    this.setState({ setLoaded: true, path: pathname, settings: settings }, () => {
-                        // stop loading sound
-                        playRandomSound(loadedSounds, false, true)
+                // load images
+                var loaded_img = new Image()
+                var home_img = new Image()
+
+                loaded_img.onload = () => {
+                    home_img.onload = () => {
+                        this.setState({
+                            setLoaded: true,
+                            path: pathname,
+                            settings: settings
+                        }, () => {
+                            // stop loading sound
+                            playRandomSound(loadedSounds, false, true)
 
 
-                        // add HTML elements effects
-                        document.querySelectorAll("button, .item").forEach((element) => {
-                            element.addEventListener("mouseenter", () => {
-                                playRandomSound(hoverSounds)
+                            // add HTML elements effects
+                            document.querySelectorAll("button, .item").forEach((element) => {
+                                element.addEventListener("mouseenter", () => {
+                                    playRandomSound(hoverSounds)
+                                })
+
+                                element.addEventListener("mousedown", () => {
+                                    playRandomSound(clickSounds)
+                                })
                             })
 
-                            element.addEventListener("mousedown", () => {
-                                playRandomSound(clickSounds)
-                            })
+
+                            // all done
+                            setTimeout(() => {
+                                this.setState({ Component_Loaded: true })
+                            }, 2000)
                         })
-
-
-                        // all done
-                        setTimeout(() => {
-                            this.setState({ Component_Loaded: true })
-                        },1500 )
-                    })
-                }, 5000)
+                    }
+                    home_img.src = "/image/bg1.jpg"
+                }
+                loaded_img.src = "/image/loaded.gif"
             })
         })
 
@@ -189,15 +202,22 @@ export default class Index extends React.Component {
         })
     }
 
+    setOpenai_api_key = (e) => {
+        this.setState({ settings: { ...this.state.settings, ...{ openai_api_key: e.target.value } } }, () => {
+            saveSettings(this.state.settings)
+        })
+    }
 
+    setSerper_api_key = (e) => {
+        this.setState({ settings: { ...this.state.settings, ...{ serper_api_key: e.target.value } } }, () => {
+            saveSettings(this.state.settings)
+        })
+    }
 
     render() {
         return (
             <>
-
-
-
-                <Loader parent_loaded={this.state.Component_Loaded} loaded={this.state.setLoaded} />
+                <Loader loading_img={this.state.loading_img} loaded_img={this.state.loaded_img} parent_loaded={this.state.Component_Loaded} loaded={this.state.setLoaded} />
 
 
 
@@ -208,7 +228,7 @@ export default class Index extends React.Component {
                         <AppBar className='navbar' position="fixed" open={this.state.openMenu} >
                             <Toolbar>
                                 <Fade in={!this.state.openMenu}>
-                                    <IconButton className='icon-btn small' onClick={() => { this.setState({ openMenu: true }) }} sx={{ marginRight: "10px",...(this.state.openMenu && { display: 'none' }) }}>
+                                    <IconButton className='icon-btn small' onClick={() => { this.setState({ openMenu: true }) }} sx={{ marginRight: "10px", ...(this.state.openMenu && { display: 'none' }) }}>
                                         <MenuIcon />
                                     </IconButton>
                                 </Fade>
@@ -264,24 +284,56 @@ export default class Index extends React.Component {
                                 </FormControl>
 
 
+                                <Divider className='space' />
+
+                                <FormControl fullWidth className='item'>
+                                    <Tooltip title="OpenAI API key used to get the best answers from different AI models">
+                                        <TextField
+                                            label="OpenAI API Key"
+                                            value={this.state.settings.openai_api_key}
+                                            variant="outlined"
+                                            onChange={this.setOpenai_api_key}
+                                        />
+                                    </Tooltip>
+                                </FormControl>
+
+
+                                <Divider className='space' />
+
+                                <FormControl fullWidth className='item'>
+                                    <Tooltip title="Serper API key used so to surf the internet so the Bot can provide real-time informations">
+                                        <TextField
+                                            label="Serper (Google search) API Key"
+                                            value={this.state.settings.serper_api_key}
+                                            variant="outlined"
+                                            onChange={this.setSerper_api_key}
+                                        />
+                                    </Tooltip>
+                                </FormControl>
+
+
 
                                 <Divider className='space line' />
 
                                 <FormControl fullWidth className='item'>
-                                    <InputLabel>Bot Voice Type</InputLabel>
-                                    <Select
-                                        className='select'
-                                        MenuProps={{ className: "drawer-list" }}
-                                        value={this.state.settings.botVoice}
-                                        label="Bot Voice Type"
-                                        onChange={this.setBotVoice}
-                                    >
-                                        {this.botVoices.map((voice, index) => {
-                                            return (
-                                                <MenuItem key={index} value={index}>{voice.name}</MenuItem>
-                                            )
-                                        })}
-                                    </Select>
+                                    <Tooltip title="Bot can speak and read messages with different voices">
+                                        <div>
+                                            <InputLabel>Bot Voice Type</InputLabel>
+                                            <Select
+                                                className='select'
+                                                MenuProps={{ className: "drawer-list" }}
+                                                value={this.state.settings.botVoice}
+                                                label="Bot Voice Type"
+                                                onChange={this.setBotVoice}
+                                            >
+                                                {this.botVoices.map((voice, index) => {
+                                                    return (
+                                                        <MenuItem key={index} value={index}>{voice.name}</MenuItem>
+                                                    )
+                                                })}
+                                            </Select>
+                                        </div>
+                                    </Tooltip>
                                 </FormControl>
 
 
@@ -291,17 +343,21 @@ export default class Index extends React.Component {
 
 
                                 <FormControl fullWidth className='item'>
-                                    <Typography sx={{ cursor: "default", color: "#fff" }} gutterBottom>Bot answer Type</Typography>
-                                    <Slider
-                                        value={this.state.settings.botTemperature * 100}
-                                        valueLabelFormat={(value) => { return value + " %" }}
-                                        valueLabelDisplay="auto"
-                                        step={10}
-                                        marks={[{ value: 10, label: "Simple" }, { value: 100, label: "Creative" }]}
-                                        min={10}
-                                        max={100}
-                                        onChange={this.setBotTemperature}
-                                    />
+                                    <Tooltip title="Bot answer type can be adjusted to give short simple answers or be more creative and provide more informations">
+                                        <div>
+                                            <Typography sx={{ cursor: "default", color: "#fff" }} gutterBottom>Bot answer Type</Typography>
+                                            <Slider
+                                                value={this.state.settings.botTemperature * 100}
+                                                valueLabelFormat={(value) => { return value + " %" }}
+                                                valueLabelDisplay="auto"
+                                                step={10}
+                                                marks={[{ value: 10, label: "Simple" }, { value: 100, label: "Creative" }]}
+                                                min={10}
+                                                max={100}
+                                                onChange={this.setBotTemperature}
+                                            />
+                                        </div>
+                                    </Tooltip>
                                 </FormControl>
 
                                 <Divider className='space' />
@@ -332,7 +388,7 @@ export default class Index extends React.Component {
 
                                         <FormControl fullWidth className='item'>
                                             <Tooltip title="How many times Bot will search in the internet to answer">
-                                                <>
+                                                <div>
                                                     <Typography sx={{ cursor: "default", color: "#fff" }} gutterBottom>Internet Search Count</Typography>
                                                     <Slider
                                                         value={this.state.settings.internetUseCount}
@@ -343,12 +399,12 @@ export default class Index extends React.Component {
                                                         max={3}
                                                         onChange={this.setInternetUseCount}
                                                     />
-                                                </>
+                                                </div>
                                             </Tooltip>
                                         </FormControl>
 
                                     </>
-                                   
+
                                 }
 
 

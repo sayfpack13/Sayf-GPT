@@ -26,6 +26,10 @@ export const clickSounds = [
     new Howl({ src: ["sound/click1.mp3"] })
 ]
 
+export const messageSounds = [
+    new Howl({ src: ["sound/message1.mp3"] })
+]
+
 
 export function muteSounds(bool) {
     mute_sound = bool

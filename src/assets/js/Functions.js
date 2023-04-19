@@ -112,7 +112,7 @@ function getChunkedResponse(payload, last_thread, callback) {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY
+            'Authorization': 'Bearer ' + payload.openai_api_key
         },
         body: JSON.stringify(payload.body)
     }).then(async (response) => {
@@ -176,23 +176,22 @@ function getChunkedResponse(payload, last_thread, callback) {
 
 
 export function getSettings() {
-    var settings = localStorage.getItem("settings")
-
-    if (settings === null) {
-        // set default setting
-        settings = {
-            username: "User",
-            botname: WEBSITE_NAME,
-            botTemperature: 0.5,        // bot message type
-            botUseInternet: true,       // use internet to answer
-            botVoice: 7,                // bot default voice id
-            internetUseCount: 1,         // how many times use internet when it to answer
-            internetContentUse: false,    // use saved internet content to answer
-            muteSounds: false
-        }
-    } else {
-        settings = JSON.parse(settings)
+    var settings = {
+        openai_api_key: "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",
+        serper_api_key: "a93073a515f7cd44bdc8dae18e6d99a341723100",
+        username: "User",
+        botname: WEBSITE_NAME,
+        botTemperature: 0.5,        // bot message type
+        botUseInternet: true,       // use internet to answer
+        botVoice: 7,                // bot default voice id
+        internetUseCount: 1,         // how many times use internet when it to answer
+        internetContentUse: false,    // use saved internet content to answer
+        muteSounds: false
     }
+
+    settings = {...settings,...(JSON.parse(localStorage.getItem("settings")))}
+
+  
 
     return settings
 }
@@ -230,7 +229,7 @@ function searchInternet(user_message, thread_id, settings, chat_history, callbac
 
     // get google search result based on thread_id
     // each time thread_id is differend results will be different too
-    getSearchEngineResult(user_message, thread_id, (data, error) => {
+    getSearchEngineResult(user_message, thread_id, settings, (data, error) => {
         if (error) {
             return callback(data, true, true)
         }
@@ -266,7 +265,6 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
 
     if (thread_id === 1) {
         // setup once in first thread which has no internet content
-        let settings = getSettings()
 
         // set username + botname from settings everytime before user+assistant message
         chat_history.splice(-2, 0,
@@ -300,6 +298,8 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
 
     let payload =
     {
+        openai_api_key: settings.openai_api_key,
+        serper_api_key: settings.serper_api_key,
         url: undefined,
         engine: undefined,
         body: {
@@ -425,7 +425,7 @@ export function getIPInformations(callback) {
 
 
 // Online search engine API
-export function getSearchEngineResult(query, thread_id, callback) {
+export function getSearchEngineResult(query, thread_id, settings, callback) {
     // get user country + language before sending request
     var payload = {
         "q": query,
@@ -442,7 +442,7 @@ export function getSearchEngineResult(query, thread_id, callback) {
     fetch(SERPER_API_URL, {
         method: "POST",
         headers: {
-            "X-API-KEY": process.env.SERPER_API_KEY,
+            "X-API-KEY": settings.serper_api_key,
             "Content-Type": "application/json"
         },
         body: JSON.stringify(payload),

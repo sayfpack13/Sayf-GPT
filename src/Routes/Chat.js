@@ -8,6 +8,7 @@ import UploadIcon from '@mui/icons-material/Upload';
 import Robot from "../assets/js/Robot"
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
+import { messageSounds, playRandomSound } from '../assets/js/Sounds';
 
 
 export default class Chat extends React.Component {
@@ -179,6 +180,7 @@ export default class Chat extends React.Component {
             // save user and initiliaze bot message
             this.saveMessage("user", user_Message, () => {
                 this.saveMessage("assistant", "", () => {
+                    playRandomSound(messageSounds)
                     var new_bot_message_index = this.state.chat_history.length - 1
                     this.saveChat()
                     this.stopBotSpeak()
@@ -194,7 +196,6 @@ export default class Chat extends React.Component {
                         if (done) {
                             this.setState({ bot_Message_Loaded: true })
                         }
-
                     })
                 })
             })
@@ -213,7 +214,6 @@ export default class Chat extends React.Component {
                 })
             } else {
                 this.saveChat()
-
             }
         }, pos)
     }

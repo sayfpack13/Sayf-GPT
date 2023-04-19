@@ -4,7 +4,7 @@ import * as React from 'react';
 import Index from './components/Index';
 import { useState } from 'react';
 import "./assets/css/fake-captcha.css"
-require('dotenv').config()
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -28,13 +28,24 @@ function App() {
         }
 
         setcaptchaClicked(true)
-        setTimeout(function () {
-            setcaptchaClicked(false)
+
+
+        // load loader image
+        var loader_img = new Image()
+        loader_img.onload = () => {
+
             setPassCaptcha(true)
+
+            // enter loader page
             setTimeout(() => {
-                setEnter(true)
+                setcaptchaClicked(false)
+                setTimeout(() => {
+                    setEnter(true)
+                }, 500)
             }, 500)
-        }, Math.floor((Math.random() * 0) + 1000))
+
+        }
+        loader_img.src = "/image/loader.gif"
     }
 
 
