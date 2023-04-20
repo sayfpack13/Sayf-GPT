@@ -1,5 +1,5 @@
 import React from 'react'
-import { checkCHATGPTResult, getCHATGPTMessage, getChatHistory, getDateTime, stopBotMessages } from '../assets/js/Functions'
+import { checkCHATGPTResult, getCHATGPTMessage, getChatHistory, getDateTime, max_Chat_History_Load, stopBotMessages } from '../assets/js/Functions'
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import ChatHeader from '../components/Chat/ChatHeader';
@@ -21,7 +21,6 @@ export default class Chat extends React.Component {
             chat_history: [],
             chat: [],
             max_Messages_Show: 10,
-            max_Chat_History_Load: 50,
             speakBotText: "",
             stopBotSpeak: false
         })
@@ -186,7 +185,7 @@ export default class Chat extends React.Component {
                     this.stopBotSpeak()
 
                     // get bot message
-                    getCHATGPTMessage(user_Message, 1, this.props.settings, this.state.chat_history.slice(-this.state.max_Chat_History_Load), (message, done, error) => {
+                    getCHATGPTMessage(user_Message, 1, this.props.settings, this.state.chat_history.slice(-max_Chat_History_Load), (message, done, error) => {
 
                         if (message !== " " && message !== "\\n") {
                             this.speakBot(message, done)
