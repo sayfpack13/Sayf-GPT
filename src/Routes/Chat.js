@@ -116,7 +116,7 @@ export default class Chat extends React.Component {
 
 
 
-    saveMessage = (role, content, callback, pos = -1) => {
+    saveMessage = (role, content, callback, pos = -1, done = false) => {
         // add/modify chat+chat_history messages
         var chat_history = this.state.chat_history
         var chat = this.state.chat
@@ -137,6 +137,11 @@ export default class Chat extends React.Component {
             var pos_chat = pos - chat_history.length - 1
             if (pos_chat >= 0) {
                 chat[pos_chat].content += content
+            }
+
+            // check if done to remove white spaces
+            if (done) {
+                chat[pos_chat].content.trim()
             }
 
 
@@ -190,7 +195,7 @@ export default class Chat extends React.Component {
 
                         if (message !== " " && message !== "\\n") {
                             this.speakBot(message, done)
-                            this.saveBotMessage(message, new_bot_message_index, error)
+                            this.saveBotMessage(message, new_bot_message_index, done, error)
                         }
 
                         if (done) {
@@ -203,7 +208,7 @@ export default class Chat extends React.Component {
     }
 
 
-    saveBotMessage = (message, pos, error = false) => {
+    saveBotMessage = (message, pos, done, error = false) => {
         this.saveMessage("assistant", message, () => {
             if (error) {
                 // if error occured remove user and bot message from chat_history
@@ -215,7 +220,7 @@ export default class Chat extends React.Component {
             } else {
                 this.saveChat()
             }
-        }, pos)
+        }, pos, done)
     }
 
 
