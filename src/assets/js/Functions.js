@@ -257,13 +257,7 @@ function searchInternet (
   })
 }
 
-export async function getCHATGPTMessage (
-  user_message,
-  thread_id = 1,
-  settings,
-  chat_history,
-  callback
-) {
+export async function getCHATGPTMessage (user_message,thread_id = 1,settings,chat_history,callback) {
   let engine1_messages = []
   let engine2_messages = ''
   let content
@@ -272,19 +266,9 @@ export async function getCHATGPTMessage (
     // setup once in first thread which has no internet content
 
     // set username + botname from settings everytime before user+assistant message
-    chat_history.splice(
-      -2,
-      0,
+    chat_history.splice(-2,0,
       { role: 'user', content: 'My name is ' + settings.username + '.' },
-      {
-        role: 'assistant',
-        content:
-          'Hello ' +
-          settings.username +
-          '. My name is ' +
-          settings.botname +
-          '. How can i assist you today?'
-      }
+      {role: 'assistant',content:'Hello ' +settings.username +'. My name is ' +settings.botname +'. How can i assist you today?'}
     )
 
     // setup chat_history once, other threads answer based on internet content
@@ -344,32 +328,16 @@ export async function getCHATGPTMessage (
 
     // send request to model
     const response = await new Promise((resolve, reject) => {
-      getChunkedResponse(
-        payload,
-        thread_id === 1 && a === models.length - 1,
-        (data, done, error) => {
+      getChunkedResponse(payload,thread_id === 1 && a === models.length - 1,(data, done, error) => {
           if (error) {
             // try using internet method once in thread level
-            if (
-              thread_id <= settings.internetUseCount &&
-              settings.botUseInternet &&
-              a === 0
-            ) {
+            if (thread_id <= settings.internetUseCount &&settings.botUseInternet &&a === 0) {
               // notify once in main thread
               if (thread_id === 1 && a === 0) {
-                callback(
-                  'Searching in the Internet !! Please wait...\n',
-                  false,
-                  false
-                )
+                callback('Searching in the Internet !! Please wait...\n',false,false)
               }
 
-              searchInternet(
-                user_message,
-                thread_id,
-                settings,
-                chat_history,
-                (data, done, error) => {
+              searchInternet(user_message,thread_id,settings,chat_history,(data, done, error) => {
                   if (error) {
                     // finish promise
                     resolve({ data: data, done: true, error: true })
@@ -399,11 +367,15 @@ export async function getCHATGPTMessage (
       )
     })
 
-    // reset stopped_bot in main thread
+    // reset stopped_bot in main thread when done
     if (thread_id === 1 && response.done && a === models.length - 1) {
       stopped_bot = false
     }
     if (response.done && !response.error) {
+            // check if full bot message is empty
+            if(chat_history[chat_history.length-1].length<2){
+              response.data="Sorry i can't find any informations..."
+            }
       return callback(response.data, true, false)
     } else if (a === models.length - 1) {
       return callback(response.data, true, true)
