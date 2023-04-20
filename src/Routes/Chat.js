@@ -133,15 +133,13 @@ export default class Chat extends React.Component {
         } else {
             // update existing message
             chat_history[pos].content += content
-
-            var pos_chat = pos - chat_history.length - 1
-            if (pos_chat >= 0) {
-                chat[pos_chat].content += content
-            }
+            chat[pos].content += content
+            
 
             // check if done to remove white spaces
             if (done) {
-                chat[pos_chat].content.trim()
+                chat_history[pos].content.trim()
+                chat[pos].content.trim()
             }
 
 
