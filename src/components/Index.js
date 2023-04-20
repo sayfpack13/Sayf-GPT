@@ -135,7 +135,7 @@ export default class Index extends React.Component {
                                     this.setState({ Component_Loaded: true })
                                 }, 2000)
                             })
-                        },8000)
+                        },2000)
 
                     }
                     home_img.src = "/image/bg1.jpg"
