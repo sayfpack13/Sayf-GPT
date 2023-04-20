@@ -38,15 +38,15 @@ export const welcome_messages = [
   'Wilkommen!'
 ]
 
-export function getRandomArrayItem (array) {
+export function getRandomArrayItem(array) {
   return array[Math.floor(Math.random() * array.length)]
 }
 
-export function stopBotMessages () {
+export function stopBotMessages() {
   stopped_bot = true
 }
 
-async function* parseJsonStream (readableStream) {
+async function* parseJsonStream(readableStream) {
   for await (const line of readLines(readableStream.getReader())) {
     const trimmedLine = line
       .slice(line.indexOf('{'), line.lastIndexOf('}') + 1)
@@ -58,7 +58,7 @@ async function* parseJsonStream (readableStream) {
   }
 }
 
-async function* readLines (reader) {
+async function* readLines(reader) {
   const textDecoder = new TextDecoder()
   let partOfLine = ''
   for await (const chunk of readChunks(reader)) {
@@ -76,9 +76,9 @@ async function* readLines (reader) {
   }
 }
 
-function readChunks (reader) {
+function readChunks(reader) {
   return {
-    async *[Symbol.asyncIterator] () {
+    async *[Symbol.asyncIterator]() {
       let readResult = await reader.read()
       while (!readResult.done) {
         yield readResult.value
@@ -88,7 +88,7 @@ function readChunks (reader) {
   }
 }
 
-export function getDateTime () {
+export function getDateTime() {
   var date = new Date()
   var dateStr =
     ('00' + date.getDate()).slice(-2) +
@@ -105,7 +105,7 @@ export function getDateTime () {
   return dateStr
 }
 
-function getChunkedResponse (payload, last_thread, callback) {
+function getChunkedResponse(payload, last_thread, callback) {
   fetch(payload.url, {
     method: 'POST',
     headers: {
@@ -124,6 +124,7 @@ function getChunkedResponse (payload, last_thread, callback) {
         return callback(response_json.error.message, true, true)
       }
 
+      let last_message=''
       let message = ''
       let checked = false
       for await (const data of parseJsonStream(response.body)) {
@@ -137,11 +138,15 @@ function getChunkedResponse (payload, last_thread, callback) {
           message += data.choices[0].text || ''
         }
 
-        // if last thread then return ell message data
+        
         if (last_thread) {
+          // if last thread then return all message chunks without verification
           if (message !== '') {
+            last_message+=message
             callback(message, false, false)
           }
+
+          message = ''
         } else {
           if (!checked && message.split(' ').length >= 4) {
             // check if bot can't answer after few words
@@ -160,6 +165,12 @@ function getChunkedResponse (payload, last_thread, callback) {
           }
         }
       }
+
+      // response is done
+      // check if last thread and full message is empty
+      if(last_thread && last_message.length<2){
+        message="Sorry i can't find any informations. Try again later..."
+      }
       callback(message, true, false)
     })
     .catch(error => {
@@ -170,7 +181,7 @@ function getChunkedResponse (payload, last_thread, callback) {
     })
 }
 
-export function getSettings () {
+export function getSettings() {
   var settings = {
     openai_api_key: '',
     serper_api_key: 'a93073a515f7cd44bdc8dae18e6d99a341723100',
@@ -189,11 +200,11 @@ export function getSettings () {
   return settings
 }
 
-export function saveSettings (settings) {
+export function saveSettings(settings) {
   localStorage.setItem('settings', JSON.stringify(settings))
 }
 
-export function getVoices (callback) {
+export function getVoices(callback) {
   let done = false
   window.speechSynthesis.onvoiceschanged = function (event) {
     callback(event.target.getVoices())
@@ -213,7 +224,7 @@ export function getVoices (callback) {
   }, 500)
 }
 
-function searchInternet (
+function searchInternet(
   user_message,
   thread_id,
   settings,
@@ -257,7 +268,7 @@ function searchInternet (
   })
 }
 
-export async function getCHATGPTMessage (user_message,thread_id = 1,settings,chat_history,callback) {
+export async function getCHATGPTMessage(user_message, thread_id = 1, settings, chat_history, callback) {
   let engine1_messages = []
   let engine2_messages = ''
   let content
@@ -266,9 +277,9 @@ export async function getCHATGPTMessage (user_message,thread_id = 1,settings,cha
     // setup once in first thread which has no internet content
 
     // set username + botname from settings everytime before user+assistant message
-    chat_history.splice(-2,0,
+    chat_history.splice(-2, 0,
       { role: 'user', content: 'My name is ' + settings.username + '.' },
-      {role: 'assistant',content:'Hello ' +settings.username +'. My name is ' +settings.botname +'. How can i assist you today?'}
+      { role: 'assistant', content: 'Hello ' + settings.username + '. My name is ' + settings.botname + '. How can i assist you today?' }
     )
 
     // setup chat_history once, other threads answer based on internet content
@@ -328,42 +339,42 @@ export async function getCHATGPTMessage (user_message,thread_id = 1,settings,cha
 
     // send request to model
     const response = await new Promise((resolve, reject) => {
-      getChunkedResponse(payload,thread_id === 1 && a === models.length - 1,(data, done, error) => {
-          if (error) {
-            // try using internet method once in thread level
-            if (thread_id <= settings.internetUseCount &&settings.botUseInternet &&a === 0) {
-              // notify once in main thread
-              if (thread_id === 1 && a === 0) {
-                callback('Searching in the Internet !! Please wait...\n',false,false)
-              }
+      getChunkedResponse(payload, thread_id === 1 && a === models.length - 1, (data, done, error) => {
+        if (error) {
+          // try using internet method once in thread level
+          if (thread_id <= settings.internetUseCount && settings.botUseInternet && a === 0) {
+            // notify once in main thread
+            if (thread_id === 1 && a === 0) {
+              callback('Searching in the Internet !! Please wait...\n', false, false)
+            }
 
-              searchInternet(user_message,thread_id,settings,chat_history,(data, done, error) => {
-                  if (error) {
-                    // finish promise
-                    resolve({ data: data, done: true, error: true })
-                  } else {
-                    if (done) {
-                      // finish promise
-                      resolve({ data: data, done: true, error: false })
-                    } else {
-                      callback(data, done, false)
-                    }
-                  }
+            searchInternet(user_message, thread_id, settings, chat_history, (data, done, error) => {
+              if (error) {
+                // finish promise
+                resolve({ data: data, done: true, error: true })
+              } else {
+                if (done) {
+                  // finish promise
+                  resolve({ data: data, done: true, error: false })
+                } else {
+                  callback(data, done, false)
                 }
-              )
-            } else {
-              // finish promise
-              resolve({ data: data, done: true, error: true })
+              }
             }
+            )
           } else {
-            if (done) {
-              // finish promise
-              resolve({ data: data, done: true, error: false })
-            } else {
-              callback(data, done, false)
-            }
+            // finish promise
+            resolve({ data: data, done: true, error: true })
+          }
+        } else {
+          if (done) {
+            // finish promise
+            resolve({ data: data, done: true, error: false })
+          } else {
+            callback(data, done, false)
           }
         }
+      }
       )
     })
 
@@ -372,10 +383,6 @@ export async function getCHATGPTMessage (user_message,thread_id = 1,settings,cha
       stopped_bot = false
     }
     if (response.done && !response.error) {
-            // check if full bot message is empty
-            if(chat_history[chat_history.length-1].length<2){
-              response.data="Sorry i can't find any informations..."
-            }
       return callback(response.data, true, false)
     } else if (a === models.length - 1) {
       return callback(response.data, true, true)
@@ -383,7 +390,7 @@ export async function getCHATGPTMessage (user_message,thread_id = 1,settings,cha
   }
 }
 
-export function checkCHATGPTResult (text) {
+export function checkCHATGPTResult(text) {
   text = text.toLowerCase()
   text = text.replaceAll('openai', WEBSITE_NAME)
   text = text.replaceAll('chatgpt', WEBSITE_NAME)
@@ -392,7 +399,7 @@ export function checkCHATGPTResult (text) {
   return text
 }
 
-export function checkResult (text) {
+export function checkResult(text) {
   text = text.toLowerCase()
 
   // check if can't answer
@@ -411,7 +418,7 @@ export function checkResult (text) {
   return false
 }
 
-export function getIPInformations (callback) {
+export function getIPInformations(callback) {
   fetch(IP_API_URL)
     .then(response => response.json())
     .then(data => {
@@ -430,7 +437,7 @@ export function getIPInformations (callback) {
 }
 
 // Online search engine API
-export function getSearchEngineResult (query, thread_id, settings, callback) {
+export function getSearchEngineResult(query, thread_id, settings, callback) {
   // get user country + language before sending request
   var payload = {
     q: query,
@@ -467,7 +474,7 @@ export function getSearchEngineResult (query, thread_id, settings, callback) {
     })
 }
 
-export function getChatHistory (callback) {
+export function getChatHistory(callback) {
   var chat_history = JSON.parse(localStorage.getItem('chat'))
 
   if (chat_history !== null) {
