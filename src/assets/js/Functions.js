@@ -117,11 +117,11 @@ function getChunkedResponse(payload, last_thread, callback) {
     .then(async response => {
       if (!response.ok) {
         if (stopped_bot) {
-          return callback('Stopped...', true, true)
+          return callback('Stopped...', true, false)
         }
 
         let response_json = await response.json()
-        return callback(response_json.error.message, true, true)
+        return callback(response_json.error.message, true, false)
       }
 
       let last_message=''
@@ -129,7 +129,7 @@ function getChunkedResponse(payload, last_thread, callback) {
       let checked = false
       for await (const data of parseJsonStream(response.body)) {
         if (stopped_bot) {
-          return callback('Stopped...', true, true)
+          return callback('Stopped...', true, false)
         }
 
         if (payload.engine === 1) {
@@ -175,7 +175,7 @@ function getChunkedResponse(payload, last_thread, callback) {
     })
     .catch(error => {
       if (stopped_bot) {
-        return callback('Stopped...', true, true)
+        return callback('Stopped...', true, false)
       }
       callback(error.message, true, true)
     })
