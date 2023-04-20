@@ -108,32 +108,35 @@ export default class Index extends React.Component {
 
                 loaded_img.onload = () => {
                     home_img.onload = () => {
-                        this.setState({
-                            setLoaded: true,
-                            path: pathname,
-                            settings: settings
-                        }, () => {
-                            // stop loading sound
-                            playRandomSound(loadedSounds, false, true)
-
-
-                            // add HTML elements effects
-                            document.querySelectorAll("button, .item").forEach((element) => {
-                                element.addEventListener("mouseenter", () => {
-                                    playRandomSound(hoverSounds)
+                        setTimeout(()=>{
+                            this.setState({
+                                setLoaded: true,
+                                path: pathname,
+                                settings: settings
+                            }, () => {
+                                // stop loading sound
+                                playRandomSound(loadedSounds, false, true)
+    
+    
+                                // add HTML elements effects
+                                document.querySelectorAll("button, .item").forEach((element) => {
+                                    element.addEventListener("mouseenter", () => {
+                                        playRandomSound(hoverSounds)
+                                    })
+    
+                                    element.addEventListener("mousedown", () => {
+                                        playRandomSound(clickSounds)
+                                    })
                                 })
-
-                                element.addEventListener("mousedown", () => {
-                                    playRandomSound(clickSounds)
-                                })
+    
+    
+                                // all done
+                                setTimeout(() => {
+                                    this.setState({ Component_Loaded: true })
+                                }, 2000)
                             })
+                        },8000)
 
-
-                            // all done
-                            setTimeout(() => {
-                                this.setState({ Component_Loaded: true })
-                            }, 2000)
-                        })
                     }
                     home_img.src = "/image/bg1.jpg"
                 }

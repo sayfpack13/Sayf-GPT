@@ -8,13 +8,11 @@ var mute_sound = false
 
 export const loadedSounds = [
     new Howl({ src: ["sound/loaded-1.mp3"] }),
-    new Howl({ src: ["sound/loaded-2.mp3"] }),
     new Howl({ src: ["sound/loaded-3.mp3"] })
 ]
 
 export const loadingSounds = [
     new Howl({ src: ["sound/loading-1.mp3"] }),
-    new Howl({ src: ["sound/loading-2.mp3"] }),
     new Howl({ src: ["sound/loading-3.mp3"] })
 ]
 

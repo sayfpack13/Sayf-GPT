@@ -21,8 +21,8 @@ const OPENAI_COMPLETION_URL = 'https://api.openai.com/v1/completions'
 const IP_API_URL = 'https://api.ipify.org?format=json'
 const IP_INFORMATIONS_API_URL = 'https://ipapi.co/'
 
-
-
+// HTTP requests
+var http_controller;
 
 // other vars
 var IP_informations = null
@@ -43,7 +43,17 @@ export function getRandomArrayItem(array) {
 }
 
 export function stopBotMessages() {
+  http_controller.abort()
+  http_controller = new AbortController()
   stopped_bot = true
+}
+
+function checkBotStopped(callback) {
+  if (stopped_bot) {
+    callback('\nStopped generating answer...', true, false)
+    return true
+  }
+  return false
 }
 
 async function* parseJsonStream(readableStream) {
@@ -106,8 +116,13 @@ export function getDateTime() {
 }
 
 function getChunkedResponse(payload, last_thread, callback) {
+  if (checkBotStopped(callback)) {
+    return
+  }
+
   fetch(payload.url, {
     method: 'POST',
+    signal: http_controller.signal,
     headers: {
       'Content-Type': 'application/json',
       Authorization: 'Bearer ' + payload.openai_api_key
@@ -116,21 +131,17 @@ function getChunkedResponse(payload, last_thread, callback) {
   })
     .then(async response => {
       if (!response.ok) {
-        if (stopped_bot) {
-          return callback('Stopped...', true, false)
-        }
+
 
         let response_json = await response.json()
-        return callback(response_json.error.message, true, false)
+        return callback(response_json.error.message, true, true)
       }
 
-      let last_message=''
+      let last_message = ''
       let message = ''
       let checked = false
       for await (const data of parseJsonStream(response.body)) {
-        if (stopped_bot) {
-          return callback('Stopped...', true, false)
-        }
+
 
         if (payload.engine === 1) {
           message += data.choices[0].delta.content || ''
@@ -138,13 +149,13 @@ function getChunkedResponse(payload, last_thread, callback) {
           message += data.choices[0].text || ''
         }
 
-        
+
         if (last_thread) {
           // if last thread then return all message chunks without verification
-          if (message !== '') {
-            last_message+=message
+
+          last_message += message
             callback(message, false, false)
-          }
+          
 
           message = ''
         } else {
@@ -157,9 +168,7 @@ function getChunkedResponse(payload, last_thread, callback) {
             checked = true
           }
           if (checked) {
-            if (message !== '') {
               callback(message, false, false)
-            }
 
             message = ''
           }
@@ -168,16 +177,15 @@ function getChunkedResponse(payload, last_thread, callback) {
 
       // response is done
       // check if last thread and full message is empty
-      if(last_thread && last_message.length<2){
-        message="Sorry i can't find any informations. Try again later..."
+      if (last_thread && last_message.length < 2) {
+        message = "Sorry i can't find any informations. Try again later..."
       }
       callback(message, true, false)
     })
     .catch(error => {
-      if (stopped_bot) {
-        return callback('Stopped...', true, false)
+      if (!checkBotStopped(callback)) {
+        return callback(error.message, true, true)
       }
-      callback(error.message, true, true)
     })
 }
 
@@ -224,13 +232,7 @@ export function getVoices(callback) {
   }, 500)
 }
 
-function searchInternet(
-  user_message,
-  thread_id,
-  settings,
-  chat_history,
-  callback
-) {
+function searchInternet(user_message, thread_id, settings, chat_history, callback) {
   // get google search result based on thread_id
   // each time thread_id is differend results will be different too
   getSearchEngineResult(user_message, thread_id, settings, (data, error) => {
@@ -241,29 +243,24 @@ function searchInternet(
     let search_query = user_message + ' based on\n' + JSON.stringify(data)
 
     // get CHATGPT answer based only on user message + internet content
-    getCHATGPTMessage(
-      search_query,
-      thread_id + 1,
-      settings,
-      chat_history,
-      (data, done, error) => {
-        callback(data, done, error)
+    getCHATGPTMessage(search_query, thread_id + 1, settings, chat_history, (data, done, error) => {
+      callback(data, done, error)
 
-        if (done && !error) {
-          // save internet content / remove user+chat name messages setup once answer found in current thread
-          if (
-            chat_history[chat_history.length - 2].internet_content === undefined
-          ) {
-            chat_history[chat_history.length - 2].internet_content =
-              search_query
-            chat_history.splice(chat_history.length - 4, 2)
-            localStorage.setItem('chat', JSON.stringify(chat_history))
-          }
-        }
-        if (done) {
-          return
+      if (done && !error) {
+        // save internet content / remove user+chat name messages setup once answer found in current thread
+        if (
+          chat_history[chat_history.length - 2].internet_content === undefined
+        ) {
+          chat_history[chat_history.length - 2].internet_content =
+            search_query
+          chat_history.splice(chat_history.length - 4, 2)
+          localStorage.setItem('chat', JSON.stringify(chat_history))
         }
       }
+      if (done) {
+        return
+      }
+    }
     )
   })
 }
@@ -274,7 +271,11 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
   let content
 
   if (thread_id === 1) {
-    // setup once in first thread which has no internet content
+    // setup once in first thread
+
+    // make request signal so we can stop it if stop button is pressed
+    http_controller = new AbortController()
+
 
     // set username + botname from settings everytime before user+assistant message
     chat_history.splice(-2, 0,
@@ -320,6 +321,10 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
     }
   }
 
+
+
+
+
   // loop models
   for (let a = 0; a < models.length; a++) {
     payload.body.messages = undefined
@@ -336,6 +341,7 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
       payload.engine = 2
       payload.body.prompt = engine2_messages
     }
+
 
     // send request to model
     const response = await new Promise((resolve, reject) => {
@@ -390,27 +396,18 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
   }
 }
 
-export function checkCHATGPTResult(text) {
-  text = text.toLowerCase()
-  text = text.replaceAll('openai', WEBSITE_NAME)
-  text = text.replaceAll('chatgpt', WEBSITE_NAME)
-  text = text.replaceAll('chatbot', WEBSITE_NAME)
-
-  return text
-}
 
 export function checkResult(text) {
-  text = text.toLowerCase()
+  let tmp_text = text.toLowerCase()
 
   // check if can't answer
-  if (
-    text.includes('ai language') ||
-    text.includes('do not') ||
-    text.includes('apologize') ||
-    text.includes('cannot') ||
-    text.includes('sorry') ||
-    text.includes("don't") ||
-    text.includes("can't")
+  if (tmp_text.includes('ai language') ||
+  tmp_text.includes('do not') ||
+  tmp_text.includes('apologize') ||
+  tmp_text.includes('cannot') ||
+  tmp_text.includes('sorry') ||
+  tmp_text.includes("don't") ||
+  tmp_text.includes("can't")
   ) {
     return true
   }

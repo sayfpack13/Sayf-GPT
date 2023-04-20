@@ -1,5 +1,5 @@
 import React from 'react'
-import { checkCHATGPTResult, getCHATGPTMessage, getChatHistory, getDateTime, max_Chat_History_Load, stopBotMessages } from '../assets/js/Functions'
+import { getCHATGPTMessage, getChatHistory, getDateTime, max_Chat_History_Load, stopBotMessages } from '../assets/js/Functions'
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import ChatHeader from '../components/Chat/ChatHeader';
@@ -57,7 +57,7 @@ export default class Chat extends React.Component {
                 chat: chat_history.slice(-this.state.max_Messages_Show),
                 Component_Loaded: true
             })
-            
+
         })
     }
 
@@ -132,11 +132,11 @@ export default class Chat extends React.Component {
             }, callback)
         } else {
             // update existing message
-            chat_history[pos].content = checkCHATGPTResult(chat_history[pos].content) + content
+            chat_history[pos].content += content
 
             var pos_chat = pos - chat_history.length - 1
             if (pos_chat >= 0) {
-                chat[pos_chat].content = checkCHATGPTResult(chat[pos_chat].content) + content
+                chat[pos_chat].content += content
             }
 
 
@@ -145,6 +145,7 @@ export default class Chat extends React.Component {
                 chat: chat
             }, callback)
         }
+
     }
 
 
