@@ -379,7 +379,7 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
     })
 
     // reset stopped_bot in main thread when done
-    if (thread_id === 1 && response.done && a === models.length - 1) {
+    if (thread_id === 1 && response.done) {
       stopped_bot = false
     }
     if (response.done && !response.error) {
