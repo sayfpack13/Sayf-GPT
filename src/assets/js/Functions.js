@@ -348,7 +348,9 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
       getChunkedResponse(payload, thread_id === 1 && a === models.length - 1, (data, done, error) => {
         if (error) {
           // try using internet method once in thread level
-          if (thread_id <= settings.internetUseCount && settings.botUseInternet && a === 0) {
+          // empty data means bot can't provide answer
+          // filled data means bot api response fail
+          if (data!=='' && thread_id <= settings.internetUseCount && settings.botUseInternet && a === 0) {
             // notify once in main thread
             if (thread_id === 1 && a === 0) {
               callback('Searching in the Internet !! Please wait...\n', false, false)
