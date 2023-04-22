@@ -1,6 +1,6 @@
 // main VARS
 export const WEBSITE_NAME = 'Sayf-GPT'
-export const max_Chat_History_Load = 50   // how many messages will be loaded from chat database
+export const max_Chat_History_Load = 20   // how many messages will be loaded from chat database
 // openai Chat Models
 const models = [
   {
@@ -159,7 +159,7 @@ function getChunkedResponse(payload, last_thread, callback) {
 
           message = ''
         } else {
-          if (!checked && message.split(' ').length >= 4) {
+          if (!checked && message.split(' ').length >= 10) {
             // check if bot can't answer after few words
             if (checkResult(message)) {
               return callback('', true, true)
