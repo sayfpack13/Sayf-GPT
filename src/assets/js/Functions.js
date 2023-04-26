@@ -159,7 +159,7 @@ function getChunkedResponse(payload, last_thread, callback) {
 
           message = ''
         } else {
-          if (!checked && message.split(' ').length >= 10) {
+          if (!checked && message.split(' ').length >= 3) {
             // check if bot can't answer after few words
             if (checkResult(message)) {
               return callback('', true, true)
