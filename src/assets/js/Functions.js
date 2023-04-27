@@ -422,6 +422,7 @@ export function checkResult(text) {
   tmp_text.includes('sorry') ||
   tmp_text.includes("don't") ||
   tmp_text.includes("couldn't") ||
+  tmp_text.includes("no results") ||
   tmp_text.includes("can't") 
   
   
