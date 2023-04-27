@@ -27,6 +27,8 @@ var http_controller;
 // other vars
 var IP_informations = null
 var stopped_bot = false
+var notified_internet = false;
+
 export const welcome_messages = [
   "Come on in - We've Been Expecting You!",
   'Greetings and Salutations!',
@@ -350,9 +352,10 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
           // try using internet method once in thread level
           // empty data means bot can't provide answer
           // filled data means bot api response fail
-          if (data!=='' && thread_id <= settings.internetUseCount && settings.botUseInternet && a === 0) {
+          if (data==='' && thread_id <= settings.internetUseCount && settings.botUseInternet) {
             // notify once in main thread
-            if (thread_id === 1 && a === 0) {
+            if (!notified_internet) {
+				notified_internet = true;
               callback('Searching in the Internet !! Please wait...\n', false, false)
             }
 
@@ -389,6 +392,7 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
     // reset stopped_bot in main thread when done
     if (thread_id === 1 && response.done) {
       stopped_bot = false
+	  notified_internet = false;
     }
     if (response.done && !response.error) {
       return callback(response.data, true, false)
