@@ -181,7 +181,15 @@ function getChunkedResponse(payload, last_thread, callback) {
       // check if last thread and full message is empty
       if (last_thread && last_message.length < 2) {
         message = "Sorry i can't find any informations. Try again later..."
-      }
+      }else{
+		  if(!checked){
+            if (checkResult(message)) {
+              return callback('', true, true)
+            }
+		  }
+	  }
+	  
+	  // done response chunks
       callback(message, true, false)
     })
     .catch(error => {
@@ -413,7 +421,10 @@ export function checkResult(text) {
   tmp_text.includes('cannot') ||
   tmp_text.includes('sorry') ||
   tmp_text.includes("don't") ||
-  tmp_text.includes("can't")
+  tmp_text.includes("couldn't") ||
+  tmp_text.includes("can't") 
+  
+  
   ) {
     return true
   }
