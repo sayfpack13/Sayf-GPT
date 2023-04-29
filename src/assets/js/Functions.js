@@ -181,8 +181,13 @@ function getChunkedResponse(payload, last_thread, callback) {
       // check if last thread and full message is empty
       if (last_thread && last_message.length < 2) {
         message = "Sorry i can't find any informations. Try again later..."
-      } 
-      
+      } else {
+        if (!checked) {
+          if (checkResult(message)) {
+            return callback('', true, true)
+          }
+        }
+      }
 
       // done response chunks
       callback(message, true, false)
@@ -352,9 +357,8 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
     const response = await new Promise((resolve, reject) => {
       getChunkedResponse(payload, thread_id === 1 && a === models.length - 1, (data, done, error) => {
         if (error) {
-          // try using internet method once in thread level
-          // empty data means bot can't provide answer
-          // filled data means bot api response fail
+          // try using internet method once in thread level only if bot can't provide answer
+          // filled data means bot api response fail pass to next boy model
           if (data === '' && thread_id <= settings.internetUseCount && settings.botUseInternet) {
             // notify once in main thread
             if (!notified_internet) {
