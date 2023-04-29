@@ -139,7 +139,7 @@ function getChunkedResponse(payload, callback) {
         return callback(response_json.error.message, true, true)
       }
 
-      let last_message = ''
+
       let message = ''
       let checked = false
       for await (const data of parseJsonStream(response.body)) {
@@ -153,7 +153,7 @@ function getChunkedResponse(payload, callback) {
 
 
 
-        if (!checked && message.split(' ').length >= 3) {
+        if (!checked && message.trim().split(' ').length >= 3) {
           // check if bot can't answer after few words
           if (checkResult(message)) {
             return callback('', true, true)
@@ -165,13 +165,6 @@ function getChunkedResponse(payload, callback) {
           callback(message, false, false)
 
           message = ''
-        }
-      }
-
-      // response is done
-      if (!checked) {
-        if (checkResult(message)) {
-          return callback('', true, true)
         }
       }
 
