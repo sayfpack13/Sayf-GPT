@@ -117,7 +117,7 @@ export function getDateTime() {
   return dateStr
 }
 
-function getChunkedResponse(payload, last_thread, callback) {
+function getChunkedResponse(payload, callback) {
   if (checkBotStopped(callback)) {
     return
   }
@@ -152,42 +152,29 @@ function getChunkedResponse(payload, last_thread, callback) {
         }
 
 
-        if (last_thread) {
-          // if last thread then return all message chunks without verification
 
-          last_message += message
+        if (!checked && message.split(' ').length >= 3) {
+          // check if bot can't answer after few words
+          if (checkResult(message)) {
+            return callback('', true, true)
+          }
+
+          checked = true
+        }
+        if (checked) {
           callback(message, false, false)
 
-
           message = ''
-        } else {
-          if (!checked && message.split(' ').length >= 3) {
-            // check if bot can't answer after few words
-            if (checkResult(message)) {
-              return callback('', true, true)
-            }
-
-            checked = true
-          }
-          if (checked) {
-            callback(message, false, false)
-
-            message = ''
-          }
         }
       }
 
       // response is done
-      // check if last thread and full message is empty
-      if (last_thread && last_message.length < 2) {
-        message = "Sorry i can't find any informations. Try again later..."
-      } else {
-        if (!checked) {
-          if (checkResult(message)) {
-            return callback('', true, true)
-          }
+      if (!checked) {
+        if (checkResult(message)) {
+          return callback('', true, true)
         }
       }
+
 
       // done response chunks
       callback(message, true, false)
@@ -355,7 +342,7 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
 
     // send request to model
     const response = await new Promise((resolve, reject) => {
-      getChunkedResponse(payload, thread_id === 1 && a === models.length - 1, (data, done, error) => {
+      getChunkedResponse(payload,  (data, done, error) => {
         if (error) {
           // try using internet method once in thread level only if bot can't provide answer
           // filled data means bot api response fail pass to next boy model
