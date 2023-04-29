@@ -153,10 +153,10 @@ function getChunkedResponse(payload, callback) {
 
 
 
-        if (!checked && message.trim().split(' ').length >= 3) {
+        if (!checked && message.trim().split(' ').length >= 7) {
           // check if bot can't answer after few words
           if (checkResult(message)) {
-            return callback('', true, true)
+            return callback(null, true, true)
           }
 
           checked = true
@@ -339,7 +339,7 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
         if (error) {
           // try using internet method once in thread level only if bot can't provide answer
           // filled data means bot api response fail pass to next boy model
-          if (data === '' && thread_id <= settings.internetUseCount && settings.botUseInternet) {
+          if (data == null && thread_id <= settings.internetUseCount && settings.botUseInternet) {
             // notify once in main thread
             if (!notified_internet) {
               notified_internet = true;
