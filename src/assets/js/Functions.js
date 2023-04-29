@@ -156,8 +156,8 @@ function getChunkedResponse(payload, last_thread, callback) {
           // if last thread then return all message chunks without verification
 
           last_message += message
-            callback(message, false, false)
-          
+          callback(message, false, false)
+
 
           message = ''
         } else {
@@ -170,7 +170,7 @@ function getChunkedResponse(payload, last_thread, callback) {
             checked = true
           }
           if (checked) {
-              callback(message, false, false)
+            callback(message, false, false)
 
             message = ''
           }
@@ -181,15 +181,10 @@ function getChunkedResponse(payload, last_thread, callback) {
       // check if last thread and full message is empty
       if (last_thread && last_message.length < 2) {
         message = "Sorry i can't find any informations. Try again later..."
-      }else{
-		  if(!checked){
-            if (checkResult(message)) {
-              return callback('', true, true)
-            }
-		  }
-	  }
-	  
-	  // done response chunks
+      } 
+      
+
+      // done response chunks
       callback(message, true, false)
     })
     .catch(error => {
@@ -360,10 +355,10 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
           // try using internet method once in thread level
           // empty data means bot can't provide answer
           // filled data means bot api response fail
-          if (data==='' && thread_id <= settings.internetUseCount && settings.botUseInternet) {
+          if (data === '' && thread_id <= settings.internetUseCount && settings.botUseInternet) {
             // notify once in main thread
             if (!notified_internet) {
-				notified_internet = true;
+              notified_internet = true;
               callback('Searching in the Internet !! Please wait...\n', false, false)
             }
 
@@ -400,7 +395,7 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
     // reset stopped_bot in main thread when done
     if (thread_id === 1 && response.done) {
       stopped_bot = false
-	  notified_internet = false;
+      notified_internet = false;
     }
     if (response.done && !response.error) {
       return callback(response.data, true, false)
@@ -416,16 +411,16 @@ export function checkResult(text) {
 
   // check if can't answer
   if (tmp_text.includes('ai language') ||
-  tmp_text.includes('do not') ||
-  tmp_text.includes('apologize') ||
-  tmp_text.includes('cannot') ||
-  tmp_text.includes('sorry') ||
-  tmp_text.includes("don't") ||
-  tmp_text.includes("couldn't") ||
-  tmp_text.includes("no results") ||
-  tmp_text.includes("can't") 
-  
-  
+    tmp_text.includes('do not') ||
+    tmp_text.includes('apologize') ||
+    tmp_text.includes('cannot') ||
+    tmp_text.includes('sorry') ||
+    tmp_text.includes("don't") ||
+    tmp_text.includes("couldn't") ||
+    tmp_text.includes("no results") ||
+    tmp_text.includes("can't")
+
+
   ) {
     return true
   }
