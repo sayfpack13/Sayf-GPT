@@ -133,8 +133,6 @@ function getChunkedResponse(payload, callback) {
   })
     .then(async response => {
       if (!response.ok) {
-
-
         let response_json = await response.json()
         return callback(response_json.error.message, true, true)
       }
@@ -153,7 +151,7 @@ function getChunkedResponse(payload, callback) {
 
 
 
-        if (!checked && message.trim().split(' ').length >= 7) {
+        if (!checked && message.split(' ').length >= 8) {
           // check if bot can't answer after few words
           if (checkResult(message)) {
             return callback(null, true, true)
@@ -335,11 +333,11 @@ export async function getCHATGPTMessage(user_message, thread_id = 1, settings, c
 
     // send request to model
     const response = await new Promise((resolve, reject) => {
-      getChunkedResponse(payload,  (data, done, error) => {
+      getChunkedResponse(payload,(data, done, error) => {
         if (error) {
           // try using internet method once in thread level only if bot can't provide answer
           // filled data means bot api response fail pass to next boy model
-          if (data == null && thread_id <= settings.internetUseCount && settings.botUseInternet) {
+          if (data === null && thread_id <= settings.internetUseCount && settings.botUseInternet) {
             // notify once in main thread
             if (!notified_internet) {
               notified_internet = true;
@@ -394,15 +392,18 @@ export function checkResult(text) {
   let tmp_text = text.toLowerCase()
 
   // check if can't answer
-  if (tmp_text.includes('ai language') ||
+  if ((tmp_text.includes('ai language') ||
     tmp_text.includes('do not') ||
     tmp_text.includes('apologize') ||
     tmp_text.includes('cannot') ||
-    tmp_text.includes('sorry') ||
+    tmp_text.includes('sorry')  ||
     tmp_text.includes("don't") ||
     tmp_text.includes("couldn't") ||
     tmp_text.includes("no results") ||
-    tmp_text.includes("can't")
+    tmp_text.includes("no specific") ||
+    tmp_text.includes("not available") ||
+    tmp_text.includes("can't"))
+    && !tmp_text.includes("not sure")
 
 
   ) {
